@@ -1,0 +1,2 @@
+-r requirements.txt
+opentelemetry-test-utils==0.38b0
