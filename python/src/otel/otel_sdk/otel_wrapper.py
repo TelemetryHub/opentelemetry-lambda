@@ -49,7 +49,21 @@ class HandlerError(Exception):
     pass
 
 
-AwsLambdaInstrumentor().instrument()
+extractor_path = os.environ.get("CONTEXT_EXTRACTOR")
+
+if extractor_path:
+    try:
+        (extractor_mod_name, extractor_name) = extractor_path.rsplit(".", 1)
+    except ValueError as e:
+        raise HandlerError("Bad path '{}' for CONTEXT_EXTRACTOR: {}".format(extractor_path, str(e)))
+
+    modified_extractor_mod_name = modify_module_name(extractor_mod_name)
+    extractor_module = import_module(modified_extractor_mod_name)
+    extractor = getattr(extractor_module, extractor_name)
+
+    AwsLambdaInstrumentor().instrument(event_context_extractor=extractor)
+else:
+    AwsLambdaInstrumentor().instrument()
 
 path = os.environ.get("ORIG_HANDLER")
 
